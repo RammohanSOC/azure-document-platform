@@ -1,0 +1,10 @@
+{
+  "name": "upload-processor",
+  "version": "1.0.0",
+  "dependencies": {
+    "@azure/functions": "^4.5.0",
+    "@azure/service-bus": "^7.9.4",
+    "@azure/identity": "^4.4.1"
+  },
+  "main": "src/functions/*.js"
+}

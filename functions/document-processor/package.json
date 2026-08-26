@@ -1,0 +1,11 @@
+{
+  "name": "document-processor",
+  "version": "1.0.0",
+  "dependencies": {
+    "@azure/functions": "^4.5.0",
+    "@azure/storage-blob": "^12.24.0",
+    "@azure/identity": "^4.4.1",
+    "mssql": "^11.0.1"
+  },
+  "main": "src/functions/*.js"
+}

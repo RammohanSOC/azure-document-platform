@@ -1,0 +1,19 @@
+project     = "docplat"
+environment = "dev"
+location    = "centralindia"
+
+tenant_id            = "00000000-0000-0000-0000-000000000000"
+aad_admin_login      = "sql-admins-dev"
+aad_admin_object_id  = "00000000-0000-0000-0000-000000000000"
+
+key_vault_admin_object_ids = [
+  "00000000-0000-0000-0000-000000000000" # e.g. your GitHub Actions OIDC SP object ID
+]
+
+alert_email = "cloudops@example.com"
+
+enable_firewall = true
+
+# Leave unset on first apply. After `terraform output front_door_id`, re-apply with:
+#   terraform apply -var="front_door_id=<value>"
+# front_door_id = ""

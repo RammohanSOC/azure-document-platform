@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Document Processing Platform</title></head>
+<body>
+  <h1>Secure Document Processing Platform</h1>
+  <form id="uploadForm">
+    <input type="file" name="document" required />
+    <button type="submit">Upload</button>
+  </form>
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      const res = await fetch('/upload', { method: 'POST', body: data });
+      alert(await res.text());
+    });
+  </script>
+</body>
+</html>

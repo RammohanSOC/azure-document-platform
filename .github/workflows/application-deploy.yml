@@ -1,0 +1,84 @@
+name: application-deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'application/**'
+      - 'functions/**'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ARM_USE_OIDC: true
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install and build web app
+        working-directory: application
+        run: npm ci && npm run --if-present build
+
+      - name: npm audit (security scan)
+        working-directory: application
+        run: npm audit --audit-level=high
+
+      - name: Zip web app
+        run: (cd application && zip -r ../webapp.zip .)
+
+      - name: Zip functions
+        run: |
+          (cd functions/upload-processor && npm ci --omit=dev && zip -r ../../upload-processor.zip .)
+          (cd functions/document-processor && npm ci --omit=dev && zip -r ../../document-processor.zip .)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deploy-artifacts
+          path: |
+            webapp.zip
+            upload-processor.zip
+            document-processor.zip
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: deploy-artifacts
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy web app
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: app-docplat-dev
+          package: webapp.zip
+
+      - name: Deploy upload-processor function
+        uses: azure/functions-action@v1
+        with:
+          app-name: func-upload-docplat-dev
+          package: upload-processor.zip
+
+      - name: Deploy document-processor function
+        uses: azure/functions-action@v1
+        with:
+          app-name: func-docproc-docplat-dev
+          package: document-processor.zip
